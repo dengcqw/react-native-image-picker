@@ -1,5 +1,5 @@
 {
-  "name": "react-native-image-picker",
+  "name": "@jtreact/react-native-image-picker",
   "version": "7.1.2",
   "description": "A React Native module that allows you to use native UI to select media from the device library or directly from the camera",
   "react-native": "src/index.ts",
@@ -19,7 +19,6 @@
   "scripts": {
     "start": "react-native start",
     "example": "yarn --cwd example",
-    "prepare": "bob build",
     "ci:publish": "yarn semantic-release"
   },
   "keywords": [
