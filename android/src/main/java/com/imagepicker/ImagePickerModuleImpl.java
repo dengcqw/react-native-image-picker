@@ -16,10 +16,13 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.module.annotations.ReactModule;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static com.imagepicker.Utils.*;
 
@@ -32,6 +35,7 @@ public class ImagePickerModuleImpl implements ActivityEventListener {
     public static final int REQUEST_LAUNCH_LIBRARY = 13003;
 
     private Uri fileUri;
+    private int count;
 
     private ReactApplicationContext reactContext;
 
@@ -107,6 +111,11 @@ public class ImagePickerModuleImpl implements ActivityEventListener {
     }
 
     public void launchImageLibrary(final ReadableMap options, final Callback callback) {
+        this.count = 1;
+        launchImageLibraryNew (options, callback, 1);
+    }
+
+    public void launchImageLibraryNew(final ReadableMap options, final Callback callback, int count) {
         final Activity currentActivity = this.reactContext.getCurrentActivity();
         if (currentActivity == null) {
             callback.invoke(getErrorMap(errOthers, "Activity error"));
@@ -126,7 +135,7 @@ public class ImagePickerModuleImpl implements ActivityEventListener {
         boolean isVideo = this.options.mediaType.equals(mediaTypeVideo);
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            if (isSingleSelect && (isPhoto || isVideo)) {
+            if (isSingleSelect && (isPhoto || isVideo) && count == 1) {
                 libraryIntent = new Intent(Intent.ACTION_PICK);
             } else {
                 libraryIntent = new Intent(Intent.ACTION_GET_CONTENT);
@@ -158,10 +167,23 @@ public class ImagePickerModuleImpl implements ActivityEventListener {
         }
 
         try {
+            if (count == 2) this.count = 3;
             currentActivity.startActivityForResult(libraryIntent, requestCode);
         } catch (ActivityNotFoundException e) {
-            callback.invoke(getErrorMap(errOthers, e.getMessage()));
-            this.callback = null;
+            if (count == 1) {
+                this.count = 2;
+                Timer timer = new Timer();
+                TimerTask task = new TimerTask() {
+                    @Override
+                    public void run() {
+                        launchImageLibraryNew(options, callback, 2);
+                    }
+                };
+                timer.schedule(task,500);
+            } else {
+                this.callback = null;
+                callback.invoke(getErrorMap(errOthers, e.getMessage()));
+            }
         }
     }
 
@@ -192,8 +214,9 @@ public class ImagePickerModuleImpl implements ActivityEventListener {
                 deleteFile(fileUri);
             }
             try {
-                callback.invoke(getCancelMap());
-                return;
+              if (this.count == 2) return;
+              callback.invoke(getCancelMap());
+              return;
             } catch (RuntimeException exception) {
                 callback.invoke(getErrorMap(errOthers, exception.getMessage()));
             } finally {
@@ -228,3 +251,4 @@ public class ImagePickerModuleImpl implements ActivityEventListener {
     public void onNewIntent(Intent intent) {
     }
 }
+
