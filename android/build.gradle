@@ -8,7 +8,7 @@ if (isNewArchitectureEnabled()) {
 }
 
 android {
-    compileSdkVersion 33
+    compileSdkVersion 36
 
     def agpVersion = com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION
     if (agpVersion.tokenize('.')[0].toInteger() >= 7) {
@@ -25,7 +25,7 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 21
+        minSdkVersion 24
         targetSdkVersion 33
         versionCode 1
         versionName "1.0"
