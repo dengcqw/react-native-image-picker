@@ -30,11 +30,13 @@ RCT_ENUM_CONVERTER(
 
 #import "RNImagePickerSpec.h"
 @interface ImagePickerManager : NSObject <NativeImagePickerSpec>
+- (void)runCallback:(NSArray *)dict;
 @end
 
 #else
 
 @interface ImagePickerManager : NSObject <RCTBridgeModule>
+- (void)runCallback:(NSArray *)result;
 @end
 
 #endif

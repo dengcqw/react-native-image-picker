@@ -5,31 +5,25 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.MediaStore;
 
 import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactContextBaseJavaModule;
-import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
-import com.facebook.react.module.annotations.ReactModule;
 
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.io.IOException;
-import java.util.Timer;
-import java.util.TimerTask;
 
 
 import static com.imagepicker.Utils.*;
-import com.imagepicker.Options;
 
 import androidx.activity.result.PickVisualMediaRequest;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia;
 import androidx.activity.result.contract.ActivityResultContracts.PickMultipleVisualMedia;
 
@@ -177,14 +171,12 @@ public class ImagePickerModuleImpl implements ActivityEventListener {
         } catch (ActivityNotFoundException e) {
             if (count == 1) {
                 this.count = 2;
-                Timer timer = new Timer();
-                TimerTask task = new TimerTask() {
+                new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         launchImageLibraryNew(options, callback, 2);
                     }
-                };
-                timer.schedule(task,500);
+                }, 500);
             } else {
                 this.callback = null;
                 callback.invoke(getErrorMap(errOthers, e.getMessage()));
